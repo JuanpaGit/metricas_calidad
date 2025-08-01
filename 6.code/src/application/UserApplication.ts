@@ -1,0 +1,40 @@
+import { UserPort } from '../domain/UserPort';
+import { User } from "../domain/User"
+
+export class UserApplication{
+    private port: UserPort;
+
+    constructor(port: UserPort){
+        this.port = port;
+    }
+
+    async createUser(user:Omit<User,"id">):Promise<number>{
+        const existingUser = await this.port.getUserByEmail(user.email);
+        if(!existingUser){
+            return await this.port.createUser(user);
+        }
+        throw new Error ("El usuario ya existe bro ._. .")
+    }
+
+    async updateUser(id:number,user:Partial<User>):Promise<boolean>{
+        const existingUser = await this.port.getUserById(id);
+        if(!existingUser){
+            throw new Error ("Ese usuario no existe mas en este mundo, se fue con la huesuda")
+        }
+        if(user.email){
+            const emailTaken = await this.port.getUserByEmail(user.email);
+            if(emailTaken && emailTaken.id !== id){
+                throw new Error ("Ese email no puede ser dominado por tu expansion de dominio :<");
+            }
+        }
+
+        return await this.port.updateUser(id,user)
+    }
+    async deleteUser(id:number): Promise<boolean>{
+        const existingUser = await this.port.getUserById(id);
+        if(!existingUser){
+            throw new Error("Ese usuario esta cosechando patata en otro server")
+        }
+        return await this.port.deleteUser(id);
+    }
+}

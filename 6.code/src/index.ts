@@ -1,5 +1,5 @@
 import { ServerBoostrap } from "./infraestructure/boostrap/server-boostrap";
-import app from "./app";
+import app from "./infraestructure/web/app";
 
 console.log("Hola mundo");
 
