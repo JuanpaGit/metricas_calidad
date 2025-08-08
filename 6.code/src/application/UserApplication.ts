@@ -37,4 +37,13 @@ export class UserApplication{
         }
         return await this.port.deleteUser(id);
     }
+    async getUserById(id:number):Promise<User | null>{
+        return await this.port.getUserById(id);
+    }
+    async getUserByEmail(email:string):Promise<User|null>{
+        return await this.port.getUserByEmail(email)
+    }
+    async getAllUsers(): Promise<User[]>{
+        return await this.port.getAllUsers();
+    }
 }
