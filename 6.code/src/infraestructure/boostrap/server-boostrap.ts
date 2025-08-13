@@ -1,6 +1,6 @@
 import express from "express";
 import http from "http";
-
+import envs from "../config/environment-vars";
 
 export class ServerBoostrap{
     //Atributos - propiedades - caracteristicas
@@ -14,7 +14,7 @@ export class ServerBoostrap{
     init(): Promise<boolean>{
         return new Promise((resolve, reject)=>{
             const server = http.createServer(this.app);
-            const PORT = process.env.PORT || 4200;
+            const PORT = envs.PORT || 4100;
 
             server.listen(PORT)
             .on("listening",()=>{
