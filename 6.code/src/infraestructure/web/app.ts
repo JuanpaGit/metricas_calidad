@@ -1,28 +1,21 @@
 import express,{Request, Response} from "express";
+import userRoutes from "../routes/userRoutes";
+
 
 class App{
-    private app!: express.Application;
+    private app: express.Application;
     constructor(){
         this.app = express();
+        this.middleware();
         this.routes();
     }
 
+    private middleware():void{
+        this.app.use(express.json());
+    }
+
     private routes():void{
-        console.log("Proceso al 1% |____");
-
-        //Crear instancia de Express
-      
-        console.log("Proceso al 20% ||||____");
-        //gestionar rutas - endPoints
-        this.app.get("/",(request: Request, response: Response)=>{
-            response.send("Good morning world");
-        });
-        console.log("Proceso al 80% |||||||_");
-        this.app.get("/check",(request: Request, response: Response)=>{
-            response.send("A darle <3");
-        });
-
-        console.log("Proceso al 100% ||||||||");
+        this.app.use("/api",userRoutes);
     }
     getApp(){
         return this.app;

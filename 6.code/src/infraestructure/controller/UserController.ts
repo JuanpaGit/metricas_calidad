@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UserApplication } from "../../application/UserApplication";
 import {User} from "../../domain/User";
+import {regex} from "../../util/validaciones";
 
 export class UserController{
     private app: UserApplication;
@@ -8,19 +9,19 @@ export class UserController{
         this.app = app;
     }
 
+    
     async registerUser(request: Request, response: Response): Promise<Response>{
         const {name,email,password}= request.body;
         try {
             //validaciones con expresiones regulares o regex
-            const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ]+(?:\s[A-Za-zÁÉÍÓÚáéíóúÑñ]+)?$/;
-            if(!nameRegex.test(name.trim())){
-                return response.status(400).json({message:"Nombre invalido papu"});
+            if(!regex.name.test(name.trim())){
+                return response.status(400).json({message:"Nombre invalido"});
                 
             }
-            if (!/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/.test(email))
+            if (!regex.email.test(email))
                 return response.status(400).json({ error: "Correo electrónico no válido" });
  
-            if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,25}$/.test(password))
+            if (!regex.password.test(password))
                 return response.status(400).json({
                 error:
                 "La contraseña debe tener al menos 6 caracteres y máximo 25, incluyendo al menos una letra y un número",
@@ -35,52 +36,50 @@ export class UserController{
         } catch (error) {
 
             if(error instanceof Error){
-                return response.status(500).json({message:"Error en el server. :<"})
+                console.log(error);
+                return response.status(500).json({message:"Error en el server."})
             }   
         }
-        return response.status(400).json({message:"Error en la peticion. Diablo"});
+        return response.status(400).json({message:"Error en la peticion."});
     }
 
-    async searchUserById(request:Request,response:Response):Promise<Response>{
+    async searchUser(request: Request, response: Response): Promise<Response> {
         try {
+            const { id, email } = request.query;
 
-            const userId = parseInt(request.params.id);
-            if(isNaN(userId))
-                return response.status(400).json({message:"Error en el parametro"});
-
-            const user = await this.app.getUserById(userId);
-            if(!user){
-                return response.status(404).json({message:"Usuario no encontrado."});
+            if (id) {
+                const userId = parseInt(id as string);
+                if (isNaN(userId)) {
+                    return response.status(400).json({ message: "ID invalido"});
+                }
+                const user = await this.app.getUserById(userId);
+                if (!user) {
+                    return response.status(404).json({ message: "Usuario no encontrado."});
+                }
+                return response.status(200).json(user);
             }
-            return response.status(200).json(user)
-            
+
+            if (email) {
+                const userEmail = email as string;
+                if (!regex.email.test(userEmail)) {
+                    return response.status(400).json({ message: "Correo electrónico inválido" });
+                }
+
+                const user = await this.app.getUserByEmail(userEmail);
+                if (!user) {
+                    return response.status(404).json({ message: "Usuario inexistente" });
+                }
+                return response.status(200).json(user);
+            }
+            return response.status(400).json({ message: "Debe enviar un parámetro de búsqueda (id o email)" });
         } catch (error) {
-            if(error instanceof Error){
-                return response.status(500).json({message:"Error en el server. :<"})
-            }   
+            if (error instanceof Error) {
+                return response.status(500).json({ message: "Error en el server."});
+            }
         }
-        return response.status(400).json({message:"Error en la peticion. Diablo"});
+        return response.status(400).json({ message: "Error en la petición." });
     }
 
-    async searchUserByEmail(request:Request,response:Response):Promise<Response>{
-        try {
-            const userEmail = request.params.email;
-            if (!/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/.test(userEmail))
-            return response.status(400).json("Correo electronico invalido");
-            
-            const user  = await this.app.getUserByEmail(userEmail);
-            if(!user){
-                return response.status(404).json({message:"Usuario inexistente"})
-            }
-            return response.status(200).json(user)
-
-        } catch (error) {
-              if(error instanceof Error){
-                return response.status(500).json({message:"Error en el server. :<"})
-            }   
-        }
-            return response.status(400).json({message:"Error en la peticion. Diablo"});
-    }
 
     async allUser(request:Request,response:Response):Promise<Response>{
         try {
@@ -88,10 +87,10 @@ export class UserController{
             return response.status(200).json(users);
         } catch (error) {
              if(error instanceof Error){
-                return response.status(500).json({message:"Error en el server. :<"})
+                return response.status(500).json({message:"Error en el server."})
             }   
         }
-        return response.status(400).json({message:"Error en la peticion. Diablo"});
+        return response.status(400).json({message:"Error en la peticion."});
     }
     
     async downdUser(request:Request,response:Response):Promise<Response>{
@@ -109,10 +108,10 @@ export class UserController{
             
         } catch (error) {
             if(error instanceof Error){
-                return response.status(500).json({message:"Error en el server. :<"})
+                return response.status(500).json({message:"Error en el server."})
             }   
         }
-        return response.status(400).json({message:"Error en la peticion. Diablo"});
+        return response.status(400).json({message:"Error en la peticion."});
     }
 
     async updateUser(request:Request,response:Response):Promise<Response>{
@@ -122,16 +121,16 @@ export class UserController{
             
             let {name,email,password,status} = request.body;
              // Validaciones antes de actualizar
-            if (name && !/^[a-zA-Z\s]{3,}$/.test(name.trim()))
+            if (name && !regex.name.test(name.trim()))
                 return response.status(400).json({
                     message:
                     "El nombre debe tener al menos 3 caracteres y solo contener letras",
                 });
  
-            if (email && !/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/.test(email.trim()))
+            if (email && !regex.email.test(email.trim()))
                 return response.status(400).json({ message: "Correo electrónico no válido" });
         
-            if (password && !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password.trim()))
+            if (password && !regex.password.test(password.trim()))
                 return response
                 .status(400)
                 .json({
@@ -146,15 +145,15 @@ export class UserController{
                 password,
                 status
             });
-            if (!updated) return response.status(400).json({message:"Usuario no enconrado, cambios no aplicados"});
+            if (!updated) return response.status(400).json({message:"Usuario no encontrado, cambios no aplicados"});
 
             return response.status(200).json({message:"Usuario actualizado con exito exitoso."})
         } catch (error) {
              if(error instanceof Error){
-                return response.status(500).json({message:"Error en el server. :<"})
+                return response.status(500).json({message:"Error en el server."})
             }   
         }  
-                return response.status(400).json({message:"Error en la peticion. Diablo"});      
+                return response.status(400).json({message:"Error en la peticion."});      
     }
 }
     

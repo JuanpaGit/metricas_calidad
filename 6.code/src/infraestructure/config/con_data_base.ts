@@ -8,7 +8,7 @@ import envs from "../config/environment-vars";
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: envs.DB_HOST,
-    port: Number(envs.DB_HOST),
+    port: Number(envs.DB_PORT),
     username: envs.DB_USER,
     password: envs.DB_PASSWORD,
     database: envs.DB_NAME,
@@ -24,7 +24,7 @@ export const connectDB = async ()=>{
         await AppDataSource.initialize();
         console.log("Base de datos conectada, wuju!");
     } catch (error) {
-        console.error("Ya valio la conexion con esa Base de datos, estamos perdidos");
+        console.error("Ya valio la conexion con esa Base de datos, estamos perdidos",error);
         process.exit(1);
     }
 }

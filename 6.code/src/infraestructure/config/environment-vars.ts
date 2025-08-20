@@ -48,7 +48,7 @@ const loadEnvVars = () : ReturnEnvironmentVars=>{
         DB_PORT: value.DB_PORT,
         DB_USER: value.DB_USER,
         DB_PASSWORD: value.DB_PASSWORD,
-        DB_NAME:value.DB_USER
+        DB_NAME:value.DB_NAME
     }
 }
 const envs = loadEnvVars();
